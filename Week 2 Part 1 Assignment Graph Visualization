@@ -1,0 +1,83 @@
+
+title: "DATA 620 - Graph Visualization"
+author: "Denise Atherley"
+
+import networkx as nx
+import matplotlib.pyplot as plt
+from pyvis.network import Network
+
+# ==========================================
+# 1. LOADING THE GRAPH DATABASE
+# ==========================================
+
+# Option A: Loading a SNAP dataset from a text file (e.g., an edge list)
+# Uncomment the line below to load your own downloaded dataset.
+# G = nx.read_edgelist("your_snap_dataset.txt", create_using=nx.Graph(), nodetype=int)
+
+# Option B: Using a built-in dataset for immediate testing
+# We'll use Zachary's Karate Club (34 nodes, 78 edges)
+G = nx.karate_club_graph()
+
+print(f"--- Graph Info ---")
+print(f"Nodes: {G.number_of_nodes()}")
+print(f"Edges: {G.number_of_edges()}\n")
+
+
+# ==========================================
+# 2. BASIC GRAPH ANALYSIS
+# ==========================================
+
+print(f"--- Graph Metrics ---")
+
+# Metric 1: Diameter
+# Important: Diameter is mathematically infinite if the graph is disconnected.
+# Real-world datasets (like those from SNAP) are rarely fully connected. 
+# We must check for connectivity and analyze the largest connected component if necessary.
+if nx.is_connected(G):
+    diameter = nx.diameter(G)
+    print(f"Graph Diameter: {diameter}")
+else:
+    # Extract the largest connected component (often called the "Giant Component")
+    largest_cc = max(nx.connected_components(G), key=len)
+    subgraph = G.subgraph(largest_cc)
+    diameter = nx.diameter(subgraph)
+    print(f"Graph is disconnected. Diameter of the largest component: {diameter}")
+
+# Metric 2: Average Clustering Coefficient
+# This measures how tightly knit the nodes are (how likely a node's friends are to be friends with each other).
+avg_clustering = nx.average_clustering(G)
+print(f"Average Clustering Coefficient: {avg_clustering:.4f}")
+
+# Metric 3: Degree Centrality
+# This finds the most "popular" or connected nodes in the network.
+degree_centrality = nx.degree_centrality(G)
+# Sort to find the top 3 most connected nodes
+top_nodes = sorted(degree_centrality.items(), key=lambda x: x[1], reverse=True)[:3]
+print(f"Top 3 Nodes by Degree Centrality: {top_nodes}\n")
+
+
+# ==========================================
+# 3. VISUALIZATION
+# ==========================================
+
+# Visualization A: Static Plot using NetworkX & Matplotlib
+print("Generating static plot...")
+plt.figure(figsize=(10, 8))
+plt.title("Static Network Graph (NetworkX + Matplotlib)")
+# Spring layout uses a force-directed algorithm to position nodes beautifully
+pos = nx.spring_layout(G, seed=42) 
+nx.draw(G, pos, with_labels=True, node_color='skyblue', edge_color='gray', node_size=600, font_weight='bold')
+plt.show()
+
+# Visualization B: Interactive HTML map using PyVis
+print("Generating interactive HTML map...")
+# Set up the PyVis network. We use a dark theme for better visual contrast.
+net = Network(height="750px", width="100%", bgcolor="#222222", font_color="white", select_menu=True)
+
+# PyVis can ingest a NetworkX graph directly
+net.from_nx(G)
+
+# Save and generate the HTML file
+output_filename = "interactive_network.html"
+net.save_graph(output_filename)
+print(f"Success! Open '{output_filename}' in your web browser to explore the interactive graph.")
