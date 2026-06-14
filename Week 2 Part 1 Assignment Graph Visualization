@@ -1,6 +1,8 @@
 
 title: "DATA 620 - Graph Visualization"
-author: "Denise Atherley"
+author: "Denise Atherley, Barakat Adigun"
+
+pip install networkx matplotlib pyvis
 
 import networkx as nx
 import matplotlib.pyplot as plt
